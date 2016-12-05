@@ -1,5 +1,52 @@
+import os
+import threading
 import Tkinter as tk
 from PIL import ImageTk, Image
+
+IMAGES_PATH = 'images'
+window = None
+image_label = None
+photo_image = None
+image_index = 0
+image_thread = None
+
+# **************************************************************
+# ROUTINE:	CreateFileList
+# **************************************************************
+def CreateFileList():
+	for root, dirs, files in os.walk(IMAGES_PATH):
+		path = root.split('/')
+		for filename in files:
+			print os.path.join(root,filename)
+
+# **************************************************************
+# ROUTINE:	QuitEvent
+# **************************************************************
+def QuitEvent(e):
+	global image_thread
+	if image_thread != None:
+		print 'BEFORE STOP'
+		image_thread.stop()
+
+	print 'BEFORE QUIT'
+	e.widget.quit()
+
+# **************************************************************
+# ROUTINE:	CreateWindow
+# **************************************************************
+def CreateWindow():
+	global window
+	global image_label
+
+	#This creates the main window of an application
+	window = tk.Tk()
+	window.attributes("-fullscreen", True) 
+	window.focus_set()
+	window.bind("<Escape>", QuitEvent)
+
+	image_label = tk.Label(window, image = None, bg='black')
+	image_label.pack(side = "bottom", fill = "both", expand = "yes")
+
 
 # **************************************************************
 # ROUTINE:	FitToScreen
@@ -23,24 +70,44 @@ def FitToScreen(image_file, w, h):
 	image_file = image_file.resize((int(new_width), int(new_height)), Image.ANTIALIAS)
 	return image_file
 
-#This creates the main window of an application
-window = tk.Tk()
-window.attributes("-fullscreen", True) 
-window.focus_set()
-window.bind("<Escape>", lambda e: e.widget.quit())
-w, h = window.winfo_screenwidth(), window.winfo_screenheight()
+# **************************************************************
+# ROUTINE:	UpdateImageLabel
+# **************************************************************
+def UpdateImageLabel(image_path):
+	global window
+	global image_label
+	global photo_image
 
-#Creates a Tkinter-compatible photo image, which can be used everywhere Tkinter expects an image object.
-path = "images/image2.jpeg"
-image_file = Image.open(path)
-image_file = FitToScreen(image_file, w, h)
-photo_image = ImageTk.PhotoImage(image_file)
+	w, h = window.winfo_screenwidth(), window.winfo_screenheight()
+	image_file = Image.open(image_path)
+	image_file = FitToScreen(image_file, w, h)
+	photo_image = ImageTk.PhotoImage(image_file)
 
-#The Label widget is a standard Tkinter widget used to display a text or image on the screen.
-panel = tk.Label(window, image = photo_image, bg='black')
+	image_label.configure(image = photo_image)
+	image_label.image = photo_image
+	image_label.pack(side = "bottom", fill = "both", expand = "yes")
 
-#The Pack geometry manager packs widgets in rows or columns.
-panel.pack(side = "bottom", fill = "both", expand = "yes")
+# **************************************************************
+# ROUTINE:	UpdateImage
+# **************************************************************
+def UpdateImage():
+	global image_index
+	global image_thread
 
-#Start the GUI
+	image_path = 'images/image' + str((image_index%3) + 1) + '.jpeg'
+	UpdateImageLabel(image_path)
+	image_index = image_index + 1
+	image_thread = threading.Timer(3.0, UpdateImage).start()
+
+# **************************************************************
+# ROUTINE:	Main
+# **************************************************************
+
+CreateFileList()
+CreateWindow()
+
+UpdateImage()
+
 window.mainloop()
+
+print 'image_thread: ' +str(image_thread)
