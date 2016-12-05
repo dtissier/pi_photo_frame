@@ -8,27 +8,21 @@ window = None
 image_label = None
 photo_image = None
 image_index = 0
-image_thread = None
 
 # **************************************************************
 # ROUTINE:	CreateFileList
 # **************************************************************
 def CreateFileList():
+	print 'IMAGES:'
 	for root, dirs, files in os.walk(IMAGES_PATH):
 		path = root.split('/')
 		for filename in files:
-			print os.path.join(root,filename)
+			print ' ' + os.path.join(root,filename)
 
 # **************************************************************
 # ROUTINE:	QuitEvent
 # **************************************************************
 def QuitEvent(e):
-	global image_thread
-	if image_thread != None:
-		print 'BEFORE STOP'
-		image_thread.stop()
-
-	print 'BEFORE QUIT'
 	e.widget.quit()
 
 # **************************************************************
@@ -56,11 +50,11 @@ def FitToScreen(image_file, w, h):
 	cur_height = image_file.size[1]
 	width_ratio = float(w)/float(cur_width)
 	height_ratio = float(h)/float(cur_height)
-	print 'image_file:'
-	print '         width=' + str(cur_width)
-	print '        height=' + str(cur_height)
-	print '   width_ratio=' + str(width_ratio)
-	print '  height_ratio=' + str(height_ratio)
+	# print 'image_file:'
+	# print '         width=' + str(cur_width)
+	# print '        height=' + str(cur_height)
+	# print '   width_ratio=' + str(width_ratio)
+	# print '  height_ratio=' + str(height_ratio)
 	if (width_ratio < height_ratio):
 		new_width = cur_width * width_ratio
 		new_height = cur_height * width_ratio
@@ -91,13 +85,13 @@ def UpdateImageLabel(image_path):
 # ROUTINE:	UpdateImage
 # **************************************************************
 def UpdateImage():
+	global window
 	global image_index
-	global image_thread
 
 	image_path = 'images/image' + str((image_index%3) + 1) + '.jpeg'
 	UpdateImageLabel(image_path)
 	image_index = image_index + 1
-	image_thread = threading.Timer(3.0, UpdateImage).start()
+	window.after(3000, UpdateImage)
 
 # **************************************************************
 # ROUTINE:	Main
@@ -108,6 +102,5 @@ CreateWindow()
 
 UpdateImage()
 
+window.config(cursor="none")
 window.mainloop()
-
-print 'image_thread: ' +str(image_thread)
