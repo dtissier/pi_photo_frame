@@ -113,6 +113,10 @@ def UpdateImage():
 	global photo_paths
 	global history_paths
 
+	if len(photo_paths) == 0:
+		photos_path = '/media/' + getpass.getuser() + '/PHOTOS'
+		CreateFileList(photos_path)
+
 	while True:
 		image_path = ''
 		num_photos = len(photo_paths)
@@ -133,8 +137,6 @@ def UpdateImage():
 # ROUTINE:	Main
 # **************************************************************
 
-photos_path = '/media/' + getpass.getuser() + '/PHOTOS'
-CreateFileList(photos_path)
 CreateWindow()
 
 UpdateImage()
