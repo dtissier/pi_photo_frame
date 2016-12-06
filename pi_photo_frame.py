@@ -1,6 +1,7 @@
 import os
 import threading
 import random
+import getpass
 import Tkinter as tk
 from PIL import ImageTk, Image
 
@@ -121,7 +122,7 @@ def UpdateImage():
 # ROUTINE:	Main
 # **************************************************************
 
-photos_path = '/media/' + os.getlogin() + '/PHOTOS'
+photos_path = '/media/' + getpass.getuser() + '/PHOTOS'
 CreateFileList(photos_path)
 CreateWindow()
 
