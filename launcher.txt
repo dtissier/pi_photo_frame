@@ -1,0 +1,1 @@
+@reboot sh /home/pi/code/pi_photo_frame/launcher.sh >/home/pi/logs/cronlog 2>&1
