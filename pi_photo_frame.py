@@ -1,23 +1,36 @@
 import os
 import threading
+import random
 import Tkinter as tk
 from PIL import ImageTk, Image
 
 IMAGES_PATH = 'images'
+NUM_SECS_PER_PHOTO = 20
 window = None
 image_label = None
 photo_image = None
 image_index = 0
+photo_paths = []
+history_paths = []
+
 
 # **************************************************************
 # ROUTINE:	CreateFileList
 # **************************************************************
-def CreateFileList():
-	print 'IMAGES:'
-	for root, dirs, files in os.walk(IMAGES_PATH):
+def CreateFileList(path):
+	global photo_paths
+	global history
+
+	# print 'IMAGES:'
+	for root, dirs, files in os.walk(path):
 		path = root.split('/')
 		for filename in files:
-			print ' ' + os.path.join(root,filename)
+			if filename.endswith('.jpg'):
+				full_path = os.path.join(root,filename)
+				photo_paths.append(full_path)
+				history_paths = []
+				# print ' ' + full_path
+	# print 'COUNT: ' + str(len(photo_paths))
 
 # **************************************************************
 # ROUTINE:	QuitEvent
@@ -87,17 +100,28 @@ def UpdateImageLabel(image_path):
 def UpdateImage():
 	global window
 	global image_index
+	global photo_paths
+	global history_paths
 
-	image_path = 'images/image' + str((image_index%3) + 1) + '.jpeg'
+	image_path = ''
+	num_photos = len(photo_paths)
+	if num_photos > 0:
+		index = random.randint(0, num_photos)
+		image_path = photo_paths[index]
+		history_paths.append(image_path)
+		del photo_paths[index]
+	else:
+		image_path = 'images/image' + str((image_index%3) + 1) + '.jpeg'
 	UpdateImageLabel(image_path)
 	image_index = image_index + 1
-	window.after(3000, UpdateImage)
+	window.after(NUM_SECS_PER_PHOTO * 1000, UpdateImage)
 
 # **************************************************************
 # ROUTINE:	Main
 # **************************************************************
 
-CreateFileList()
+photos_path = '/media/' + os.getlogin() + '/PHOTOS'
+CreateFileList(photos_path)
 CreateWindow()
 
 UpdateImage()
