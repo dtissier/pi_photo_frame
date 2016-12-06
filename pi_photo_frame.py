@@ -28,11 +28,12 @@ def CreateFileList(path):
 			path = root.split('/')
 			for filename in files:
 				if filename.endswith('.jpg'):
-					full_path = os.path.join(root,filename)
-					photo_paths.append(full_path)
-					history_paths = []
-					# print ' ' + full_path
-		# print 'COUNT: ' + str(len(photo_paths))
+					if filename.startswith('.') == False:
+						full_path = os.path.join(root,filename)
+						photo_paths.append(full_path)
+						history_paths = []
+						# print ' ' + full_path
+		print 'COUNT: ' + str(len(photo_paths))
 
 # **************************************************************
 # ROUTINE:	QuitEvent
@@ -87,14 +88,21 @@ def UpdateImageLabel(image_path):
 	global image_label
 	global photo_image
 
-	w, h = window.winfo_screenwidth(), window.winfo_screenheight()
-	image_file = Image.open(image_path)
-	image_file = FitToScreen(image_file, w, h)
-	photo_image = ImageTk.PhotoImage(image_file)
+	try:
+		w, h = window.winfo_screenwidth(), window.winfo_screenheight()
+		image_file = Image.open(image_path)
+		image_file = FitToScreen(image_file, w, h)
+		photo_image = ImageTk.PhotoImage(image_file)
 
-	image_label.configure(image = photo_image)
-	image_label.image = photo_image
-	image_label.pack(side = "bottom", fill = "both", expand = "yes")
+		image_label.configure(image = photo_image)
+		image_label.image = photo_image
+		image_label.pack(side = "bottom", fill = "both", expand = "yes")
+		return True
+
+	except:
+		return False
+
+	return False
 
 # **************************************************************
 # ROUTINE:	UpdateImage
@@ -105,16 +113,19 @@ def UpdateImage():
 	global photo_paths
 	global history_paths
 
-	image_path = ''
-	num_photos = len(photo_paths)
-	if num_photos > 0:
-		index = random.randint(0, num_photos)
-		image_path = photo_paths[index]
-		history_paths.append(image_path)
-		del photo_paths[index]
-	else:
-		image_path = 'images/image' + str((image_index%3) + 1) + '.jpeg'
-	UpdateImageLabel(image_path)
+	while True:
+		image_path = ''
+		num_photos = len(photo_paths)
+		if num_photos > 0:
+			index = random.randint(0, num_photos-1)
+			image_path = photo_paths[index]
+			history_paths.append(image_path)
+			del photo_paths[index]
+		else:
+			image_path = 'images/image' + str((image_index%3) + 1) + '.jpeg'
+		if UpdateImageLabel(image_path):
+			break
+
 	image_index = image_index + 1
 	window.after(NUM_SECS_PER_PHOTO * 1000, UpdateImage)
 
