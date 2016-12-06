@@ -21,16 +21,17 @@ def CreateFileList(path):
 	global photo_paths
 	global history
 
-	# print 'IMAGES:'
-	for root, dirs, files in os.walk(path):
-		path = root.split('/')
-		for filename in files:
-			if filename.endswith('.jpg'):
-				full_path = os.path.join(root,filename)
-				photo_paths.append(full_path)
-				history_paths = []
-				# print ' ' + full_path
-	# print 'COUNT: ' + str(len(photo_paths))
+	if os.path.exists(path):
+		# print 'IMAGES:'
+		for root, dirs, files in os.walk(path):
+			path = root.split('/')
+			for filename in files:
+				if filename.endswith('.jpg'):
+					full_path = os.path.join(root,filename)
+					photo_paths.append(full_path)
+					history_paths = []
+					# print ' ' + full_path
+		# print 'COUNT: ' + str(len(photo_paths))
 
 # **************************************************************
 # ROUTINE:	QuitEvent
