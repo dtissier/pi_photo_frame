@@ -8,7 +8,7 @@ import Tkinter as tk
 from PIL import ImageTk, Image
 
 IMAGES_PATH = 'images'
-NUM_SECS_PER_PHOTO = 5
+NUM_SECS_PER_PHOTO = 45
 IMAGE_WEB_PATH = 'image_history/'
 window = None
 image_label = None
