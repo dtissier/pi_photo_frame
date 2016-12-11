@@ -8,7 +8,7 @@ import Tkinter as tk
 from PIL import ImageTk, Image
 
 IMAGES_PATH = 'images'
-NUM_SECS_PER_PHOTO = 45
+NUM_SECS_PER_PHOTO = 5
 IMAGE_WEB_PATH = 'image_history/'
 window = None
 image_label = None
@@ -16,11 +16,45 @@ photo_image = None
 image_index = 0
 photo_paths = []
 history_paths = []
-history_index = None
-show_history = False
+history_index = 0
+running = True
 web_thread = None
 httpd = None
 port_number = 8000
+html_template = ''
+
+#####################################################################
+# ROUTINE: LoadHTMLTemplate
+#####################################################################
+def LoadHTMLTemplate():
+	global html_template
+
+	f = open('template.html', 'r')
+	with f as template_file:
+		html_template = template_file.read()
+		html_template = html_template.replace('images/image1.jpeg', 'images_image1.jpeg')
+		html_template = html_template.replace('images/image2.jpeg', 'images_image2.jpeg')
+		html_template = html_template.replace('images/image3.jpeg', 'images_image3.jpeg')
+
+#####################################################################
+# ROUTINE: CreateHTML
+#####################################################################
+def CreateHTML(index, range, back_path, forward_path, main_path):
+	global html_template
+	global running
+	# print 'BEFORE: ' + str(html_template)
+	footer_info = str(index + 1) + ' of ' + str(range)
+	html_str = html_template.replace('FOOTER_INFO', str(footer_info))
+	if running == True:
+		html_str = html_str.replace('/?action=run', '/?action=pause')
+		html_str = html_str.replace('PAUSE_RUN_TEXT', 'PAUSE')
+	else:
+		html_str = html_str.replace('PAUSE_RUN_TEXT', 'RUN')
+	html_str = html_str.replace('images_image1.jpeg', str(back_path))
+	html_str = html_str.replace('images_image2.jpeg', str(forward_path))
+	html_str = html_str.replace('images_image3.jpeg', str(main_path))
+	# print 'AFTER: ' + str(html_str)
+	return html_str
 
 #####################################################################
 # CLASS: MyWebHandler
@@ -32,37 +66,41 @@ class MyWebHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 	#####################################################################
 	def do_GET(self):
 		global history_paths
-		global show_history
+		global running
 		global history_index
 
 		# Parse query data & params to find out what was passed
 		parsed_params = urlparse.urlparse(self.path)
 		query_parsed = urlparse.parse_qs(parsed_params.query)
-		print 'parsed_params: ' + str(parsed_params)
+		# print 'parsed_params: ' + str(parsed_params)
 		if parsed_params.query == 'action=pause':
-			show_history = True
+			# print 'ACTION: pause'
+			running = False
 			history_index = len(history_paths) - 1
 			UpdateImage(False)
 		elif parsed_params.query == 'action=run':
-			show_history = False
-			history_index = None
+			# print 'ACTION: run'
+			running = True
+			history_index = len(history_paths) - 1
 			UpdateImage(False)
 		elif parsed_params.query == 'action=backward':
-			if history_index != None and history_index > 0:
+			# print 'ACTION: backward'
+			if history_index > 0:
 				history_index = history_index - 1
-			show_history = True
+			running = False
 			UpdateImage(False)
 		elif parsed_params.query == 'action=forward':
-			if history_index != None and history_paths != None and history_index < len(history_paths) - 1:
+			# print 'ACTION: forward'
+			if history_index < len(history_paths) - 1:
 				history_index = history_index + 1
-			show_history = True
+			running = False
 			UpdateImage(False)
 
 		# request is either for a file to be served up or our test
 		if parsed_params.path == "/":
 			self.ProcessMyRequest(query_parsed)
 		else:
-			print 'path: ' + parsed_params.path
+			# print 'path: ' + parsed_params.path
 			# Default to serve up a local file 
 			SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self);
 
@@ -72,28 +110,26 @@ class MyWebHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 	def ProcessMyRequest(self, query):
 		global history_paths
 		global history_index
-		global show_history
+		global running
 
 		num_images = len(history_paths)
-		if history_index == None:
-			history_index = num_images - 1
 		self.send_response(200)
 		self.send_header("Content-type", "text/html")
 		self.end_headers()
 
-		image_url = str(history_paths[history_index])
-		self.wfile.write('<html><head><title>RESPBERRY PI PHOTO FRAME</title></head>')
-		self.wfile.write('<body>')
-		self.wfile.write('' + str(history_index+1) + ' of ' + str(num_images) + '<br>')
-		self.wfile.write('<a href="/"><button>Refresh</button></a>')
-		if show_history == True:
-			self.wfile.write('<a href="/?action=run"><button>Run</button></a>')
-		else:
-			self.wfile.write('<a href="/?action=pause"><button>Pause</button></a>')
-		self.wfile.write('<a href="/?action=backward"><button>Backward</button></a>')
-		self.wfile.write('<a href="/?action=forward"><button>Forward</button></a><br>')
-		self.wfile.write('<img src="' + image_url + '">')
-		self.wfile.write('</body></html>')
+		back_bath = ''
+		forward_bath = ''
+		main_path = ''
+		if history_index >= 0 and history_index < num_images:
+			main_path = str(history_paths[history_index])
+			if history_index > 0:
+				back_bath = str(history_paths[history_index-1])
+			if history_index < (num_images-1):
+				forward_bath = str(history_paths[history_index+1])
+		# print str(history_paths)
+		# print str(history_index) + ' ' + str(num_images) + ' "' + back_bath + '" "' + main_path + '" "' + forward_bath + '" ' +  str(running)
+		new_html = CreateHTML(history_index, str(num_images), back_bath, forward_bath, main_path)
+		self.wfile.write(new_html)
 
 #####################################################################
 # ROUTINE: WebThread
@@ -101,7 +137,7 @@ class MyWebHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 def WebThread(arg):
 	global httpd
 	handler = MyWebHandler
-	httpd = SocketServer.TCPServer( ("", port_number), handler )
+	httpd = SocketServer.TCPServer(("", port_number), handler)
 	print
 	print "Photo Frame Server"
 	print "       Port:", port_number
@@ -142,7 +178,7 @@ def CreateFileList(path):
 						photo_paths.append(full_path)
 						history_paths = []
 						# print ' ' + full_path
-		print 'COUNT: ' + str(len(photo_paths))
+		# print 'COUNT: ' + str(len(photo_paths))
 
 # **************************************************************
 # ROUTINE:	QuitEvent
@@ -227,7 +263,8 @@ def UpdateImage(restart=True):
 	global image_index
 	global photo_paths
 	global history_paths
-	global show_history
+	global history_index
+	global running
 
 	if len(photo_paths) == 0:
 		photos_path = '/media/' + getpass.getuser() + '/PHOTOS'
@@ -236,21 +273,28 @@ def UpdateImage(restart=True):
 	while True:
 		image_path = ''
 		num_photos = len(photo_paths)
-		if show_history and history_index != None and history_index < len(history_paths):
-			image_path = history_paths[history_index]
+		if running == False:
+			if history_index >= 0 and history_index < len(history_paths):
+				image_path = history_paths[history_index]
+			else:
+				history_index = len(history_paths) - 1
+				image_path = history_paths[history_index]
 		elif num_photos > 0:
 			index = random.randint(0, num_photos-1)
 			image_path = photo_paths[index]
-			history_paths.append(image_path)
-			del photo_paths[index]
+			if running:
+				del photo_paths[index]
 		else:
 			image_path = 'images/image' + str((image_index%3) + 1) + '.jpeg'
+
+		if running:
 			history_paths.append(image_path)
+			history_index = len(history_paths) - 1
 
 		if UpdateImageLabel(image_path):
 			break
 
-	if show_history == False and history_paths != None:
+	if running == True and history_paths != None:
 		while len(history_paths) > 20:
 			del history_paths[0]
 
@@ -262,6 +306,7 @@ def UpdateImage(restart=True):
 # ROUTINE:	Main
 # **************************************************************
 
+LoadHTMLTemplate()
 CreateWindow()
 UpdateImage()
 web_thread = StartWebServer()
