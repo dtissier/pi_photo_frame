@@ -323,7 +323,7 @@ def UpdateImage(restart=True):
 		image_path = ''
 		num_photos = len(photo_paths)
 		if running == False:
-			image_label_text.configure('PAUSED')
+			image_label_text.configure(text='PAUSED')
 			image_label_text.place(x=0, y=0)
 			if history_index >= 0 and history_index < len(history_paths):
 				image_path = history_paths[history_index]
