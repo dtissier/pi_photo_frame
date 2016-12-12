@@ -5,13 +5,17 @@ from time import sleep
 from threading import Thread
 import SimpleHTTPServer, SocketServer, platform, sys, socket, urlparse
 import Tkinter as tk
+from Tkinter import StringVar
 from PIL import ImageTk, Image
 
 IMAGES_PATH = 'images'
 NUM_SECS_PER_PHOTO = 45
+PAUSE_NUM_SECS = (60 * 5)
+PAUSE_COUNT_START = PAUSE_NUM_SECS/NUM_SECS_PER_PHOTO
 IMAGE_WEB_PATH = 'image_history/'
 window = None
 image_label = None
+image_label_text = None
 photo_image = None
 image_index = 0
 photo_paths = []
@@ -22,6 +26,18 @@ web_thread = None
 httpd = None
 port_number = 8000
 html_template = ''
+pause_count = 0
+
+#####################################################################
+# ROUTINE: SetRunning
+#####################################################################
+def SetRunning(value):
+	global running
+	global pause_count
+	running = value
+	if running == False:
+		pause_count = PAUSE_COUNT_START
+	UpdateImage(False)
 
 #####################################################################
 # ROUTINE: LoadHTMLTemplate
@@ -68,6 +84,7 @@ class MyWebHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 		global history_paths
 		global running
 		global history_index
+		global pause_count
 
 		# Parse query data & params to find out what was passed
 		parsed_params = urlparse.urlparse(self.path)
@@ -75,26 +92,22 @@ class MyWebHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 		# print 'parsed_params: ' + str(parsed_params)
 		if parsed_params.query == 'action=pause':
 			# print 'ACTION: pause'
-			running = False
 			history_index = len(history_paths) - 1
-			UpdateImage(False)
+			SetRunning(False)
 		elif parsed_params.query == 'action=run':
 			# print 'ACTION: run'
-			running = True
 			history_index = len(history_paths) - 1
-			UpdateImage(False)
+			SetRunning(True)
 		elif parsed_params.query == 'action=backward':
 			# print 'ACTION: backward'
 			if history_index > 0:
 				history_index = history_index - 1
-			running = False
-			UpdateImage(False)
+			SetRunning(False)
 		elif parsed_params.query == 'action=forward':
 			# print 'ACTION: forward'
 			if history_index < len(history_paths) - 1:
 				history_index = history_index + 1
-			running = False
-			UpdateImage(False)
+			SetRunning(False)
 
 		# request is either for a file to be served up or our test
 		if parsed_params.path == "/":
@@ -198,6 +211,7 @@ def QuitEvent(e):
 def CreateWindow():
 	global window
 	global image_label
+	global image_label_text
 
 	#This creates the main window of an application
 	window = tk.Tk()
@@ -207,6 +221,9 @@ def CreateWindow():
 
 	image_label = tk.Label(window, image = None, bg='black')
 	image_label.pack(side = "bottom", fill = "both", expand = "yes")
+
+	image_label_text = tk.Label(image_label, text='HELLO THERE')
+	image_label_text.place(x=0, y=0)
 
 
 # **************************************************************
@@ -248,6 +265,7 @@ def UpdateImageLabel(image_path):
 		image_label.configure(image = photo_image)
 		image_label.image = photo_image
 		image_label.pack(side = "bottom", fill = "both", expand = "yes")
+
 		return True
 
 	except:
@@ -265,15 +283,25 @@ def UpdateImage(restart=True):
 	global history_paths
 	global history_index
 	global running
+	global image_label_text
+	global pause_count
 
 	if len(photo_paths) == 0:
 		photos_path = '/media/' + getpass.getuser() + '/PHOTOS'
 		CreateFileList(photos_path)
 
+	if restart:
+		if pause_count > 0:
+			pause_count = pause_count - 1
+			if pause_count <= 0:
+				running = True
+
 	while True:
 		image_path = ''
 		num_photos = len(photo_paths)
 		if running == False:
+			image_label_text.configure(text='PAUSED')
+			image_label_text.place(x=0, y=0)
 			if history_index >= 0 and history_index < len(history_paths):
 				image_path = history_paths[history_index]
 			else:
@@ -288,6 +316,8 @@ def UpdateImage(restart=True):
 			image_path = 'images/image' + str((image_index%3) + 1) + '.jpeg'
 
 		if running:
+			image_label_text.configure(text='RUNNING')
+			image_label_text.place(x=-1000, y=-1000)
 			history_paths.append(image_path)
 			history_index = len(history_paths) - 1
 
