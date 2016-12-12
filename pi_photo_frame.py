@@ -7,6 +7,7 @@ import SimpleHTTPServer, SocketServer, platform, sys, socket, urlparse
 import Tkinter as tk
 from Tkinter import StringVar
 from PIL import ImageTk, Image
+from PIL.ExifTags import TAGS
 
 IMAGES_PATH = 'images'
 NUM_SECS_PER_PHOTO = 45
@@ -27,6 +28,7 @@ httpd = None
 port_number = 8000
 html_template = ''
 pause_count = 0
+date_time_digitized = ''
 
 #####################################################################
 # ROUTINE: SetRunning
@@ -222,7 +224,7 @@ def CreateWindow():
 	image_label = tk.Label(window, image = None, bg='black')
 	image_label.pack(side = "bottom", fill = "both", expand = "yes")
 
-	image_label_text = tk.Label(image_label, text='HELLO THERE')
+	image_label_text = tk.Label(image_label, text='HELLO THERE', fg="red", bg="black")
 	image_label_text.place(x=0, y=0)
 
 
@@ -255,10 +257,29 @@ def UpdateImageLabel(image_path):
 	global window
 	global image_label
 	global photo_image
+	global date_time_digitized
 
 	try:
 		w, h = window.winfo_screenwidth(), window.winfo_screenheight()
 		image_file = Image.open(image_path)
+
+		try:
+			photo_info = image_file._getexif()
+			if photo_info != None:
+				for tag, value in photo_info.items():
+					decoded = TAGS.get(tag, tag)
+					if decoded == 'DateTimeDigitized':
+						date_time_digitized = str(value)
+						split_data_time = date_time_digitized.split(' ')
+						if len(split_data_time) == 2:
+							year_month_day = split_data_time[0].split(':')
+							if len(year_month_day) == 3:
+								date_time_digitized = year_month_day[1] + '/' + year_month_day[2] + '/' + year_month_day[0]
+						break
+		except:
+			print 'Exception did occur'
+			pass
+
 		image_file = FitToScreen(image_file, w, h)
 		photo_image = ImageTk.PhotoImage(image_file)
 
@@ -285,9 +306,11 @@ def UpdateImage(restart=True):
 	global running
 	global image_label_text
 	global pause_count
+	global date_time_digitized
 
 	if len(photo_paths) == 0:
 		photos_path = '/media/' + getpass.getuser() + '/PHOTOS'
+		# photos_path = '/Volumes/PHOTOS'
 		CreateFileList(photos_path)
 
 	if restart:
@@ -300,7 +323,7 @@ def UpdateImage(restart=True):
 		image_path = ''
 		num_photos = len(photo_paths)
 		if running == False:
-			image_label_text.configure(text='PAUSED')
+			image_label_text.configure('PAUSED')
 			image_label_text.place(x=0, y=0)
 			if history_index >= 0 and history_index < len(history_paths):
 				image_path = history_paths[history_index]
@@ -316,12 +339,15 @@ def UpdateImage(restart=True):
 			image_path = 'images/image' + str((image_index%3) + 1) + '.jpeg'
 
 		if running:
-			image_label_text.configure(text='RUNNING')
-			image_label_text.place(x=-1000, y=-1000)
+			# image_label_text.place(x=-1000, y=-1000)
 			history_paths.append(image_path)
 			history_index = len(history_paths) - 1
 
 		if UpdateImageLabel(image_path):
+			if running:
+				image_label_text.configure(text=date_time_digitized)
+			else:
+				image_label_text.configure(text=date_time_digitized + ' - PAUSED')
 			break
 
 	if running == True and history_paths != None:
