@@ -135,7 +135,10 @@ class MyWebHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 		back_bath = ''
 		forward_bath = ''
 		main_path = ''
-		if history_index >= 0 and history_index < num_images:
+		if history_index >= 0:
+			if history_index >= num_images:
+				history_index = num_images - 1
+
 			main_path = str(history_paths[history_index])
 			if history_index > 0:
 				back_bath = str(history_paths[history_index-1])
