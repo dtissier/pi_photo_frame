@@ -29,6 +29,7 @@ port_number = 8000
 html_template = ''
 pause_count = 0
 date_time_digitized = ''
+main_images_path = ''
 
 #####################################################################
 # ROUTINE: SetRunning
@@ -53,6 +54,8 @@ def LoadHTMLTemplate():
 		html_template = html_template.replace('images/image1.jpeg', 'images_image1.jpeg')
 		html_template = html_template.replace('images/image2.jpeg', 'images_image2.jpeg')
 		html_template = html_template.replace('images/image3.jpeg', 'images_image3.jpeg')
+		iphone_icon_path = main_images_path + 'images/iphone_icon.jpeg'
+		html_template = html_template.replace('images/iphone_icon.jpeg', iphone_icon_path)
 
 #####################################################################
 # ROUTINE: CreateHTML
@@ -185,6 +188,7 @@ def CreateFileList(path):
 	global history
 
 	if os.path.exists(path):
+		main_images_path = os.getcwd() + '/'
 		os.chdir('/')
 		# print 'IMAGES:'
 		for root, dirs, files in os.walk(path):
