@@ -54,8 +54,6 @@ def LoadHTMLTemplate():
 		html_template = html_template.replace('images/image1.jpeg', 'images_image1.jpeg')
 		html_template = html_template.replace('images/image2.jpeg', 'images_image2.jpeg')
 		html_template = html_template.replace('images/image3.jpeg', 'images_image3.jpeg')
-		iphone_icon_path = main_images_path + 'images/iphone_icon.jpeg'
-		html_template = html_template.replace('images/iphone_icon.jpeg', iphone_icon_path)
 
 #####################################################################
 # ROUTINE: CreateHTML
@@ -63,6 +61,8 @@ def LoadHTMLTemplate():
 def CreateHTML(index, range, back_path, forward_path, main_path):
 	global html_template
 	global running
+	global main_images_path
+
 	# print 'BEFORE: ' + str(html_template)
 	footer_info = str(index + 1) + ' of ' + str(range)
 	html_str = html_template.replace('FOOTER_INFO', str(footer_info))
@@ -74,7 +74,9 @@ def CreateHTML(index, range, back_path, forward_path, main_path):
 	html_str = html_str.replace('images_image1.jpeg', str(back_path))
 	html_str = html_str.replace('images_image2.jpeg', str(forward_path))
 	html_str = html_str.replace('images_image3.jpeg', str(main_path))
-	# print 'AFTER: ' + str(html_str)
+	iphone_icon_path = main_images_path + 'images/iphone_icon.jpeg'
+	html_str = html_str.replace('images/iphone_icon.jpeg', iphone_icon_path)
+	print 'AFTER: ' + str(html_str)
 	return html_str
 
 #####################################################################
@@ -186,6 +188,7 @@ def StartWebServer():
 def CreateFileList(path):
 	global photo_paths
 	global history
+	global main_images_path
 
 	if os.path.exists(path):
 		main_images_path = os.getcwd() + '/'
