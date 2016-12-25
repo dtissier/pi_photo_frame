@@ -197,13 +197,16 @@ def CreateFileList(path):
 		for root, dirs, files in os.walk(path):
 			path = root.split('/')
 			for filename in files:
-				if filename.endswith('.jpg'):
+				lower_name = filename.lower()
+				if lower_name.endswith('.jpg') or lower_name.endswith('.jpeg'):
 					if filename.startswith('.') == False:
 						full_path = os.path.join(root,filename)
 						photo_paths.append(full_path)
 						history_paths = []
 						# print ' ' + full_path
 		# print 'COUNT: ' + str(len(photo_paths))
+		return True
+	return False
 
 # **************************************************************
 # ROUTINE:	QuitEvent
@@ -236,6 +239,8 @@ def CreateWindow():
 
 	image_label_text = tk.Label(image_label, text='HELLO THERE', fg="red", bg="black")
 	image_label_text.place(x=0, y=0)
+	labelfont = ('Arial', 20)
+	image_label_text.config(font=labelfont) 
 
 
 # **************************************************************
@@ -320,8 +325,9 @@ def UpdateImage(restart=True):
 
 	if len(photo_paths) == 0:
 		photos_path = '/media/' + getpass.getuser() + '/PHOTOS'
-		# photos_path = '/Volumes/PHOTOS'
-		CreateFileList(photos_path)
+		if CreateFileList(photos_path) == False:
+			photos_path = '/Volumes/PHOTOS'
+			CreateFileList(photos_path)
 
 	if restart:
 		if pause_count > 0:
