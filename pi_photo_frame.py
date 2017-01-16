@@ -62,9 +62,11 @@ def CreateHTML(index, range, back_path, forward_path, main_path):
 	global html_template
 	global running
 	global main_images_path
+	global date_time_digitized
 
 	# print 'BEFORE: ' + str(html_template)
-	footer_info = str(index + 1) + ' of ' + str(range)
+	footer_info = date_time_digitized
+	footer_info = footer_info + ' (' + str(index + 1) + ' of ' + str(range) + ')'
 	html_str = html_template.replace('FOOTER_INFO', str(footer_info))
 	if running == True:
 		html_str = html_str.replace('/?action=run', '/?action=pause')

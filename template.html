@@ -3,8 +3,7 @@
 <head>
 
     <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-
+    <meta name="apple-mobile-web-app-capable" content="no" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <link rel="apple-touch-icon" href="images/iphone_icon.jpeg"/>
     <link rel="apple-touch-startup-image" href="images/iphone_icon.jpeg" />
@@ -107,6 +106,24 @@ img {
     <div id="photo_body"><img src="images/image3.jpeg"/></div>
     <div id="footer">FOOTER_INFO</div>
 </div>
+
+
+<script>
+//    <div id="photo_body"><img src="images/image3.jpeg" onclick="myFunction()"/></div>
+
+function myFunction() {
+    el = document.getElementById("photo_body");
+    var range = document.createRange();
+    range.selectNodeContents(el);
+    var sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    // document.execCommand('copy');    
+    // window.open("sms:");
+    // sel.removeAllRanges();
+}
+</script>
+
 
 </body>
 </html>
