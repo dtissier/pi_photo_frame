@@ -241,8 +241,8 @@ def CreateWindow():
 
 	image_label_text = tk.Label(image_label, text='HELLO THERE', fg="red", bg="black")
 	image_label_text.place(x=0, y=0)
-	labelfont = ('Arial', 20)
-	image_label_text.config(font=labelfont) 
+	labelfont = ('Arial',50)
+	image_label_text.config(font=labelfont, justify=tk.LEFT) 
 
 
 # **************************************************************
@@ -270,6 +270,36 @@ def FitToScreen(image_file, w, h):
 # **************************************************************
 # ROUTINE:	UpdateImageLabel
 # **************************************************************
+def GetMonthString(month_str):
+	if month_str == '01':
+		return 'Jan'
+	if month_str == '02':
+		return 'Jan'
+	if month_str == '03':
+		return 'Jan'
+	if month_str == '04':
+		return 'Jan'
+	if month_str == '05':
+		return 'Jan'
+	if month_str == '06':
+		return 'Jan'
+	if month_str == '07':
+		return 'Jan'
+	if month_str == '08':
+		return 'Jan'
+	if month_str == '09':
+		return 'Jan'
+	if month_str == '10':
+		return 'Jan'
+	if month_str == '11':
+		return 'Jan'
+	if month_str == '12':
+		return 'Jan'
+	return month_str
+
+# **************************************************************
+# ROUTINE:	UpdateImageLabel
+# **************************************************************
 def UpdateImageLabel(image_path):
 	global window
 	global image_label
@@ -291,7 +321,8 @@ def UpdateImageLabel(image_path):
 						if len(split_data_time) == 2:
 							year_month_day = split_data_time[0].split(':')
 							if len(year_month_day) == 3:
-								date_time_digitized = year_month_day[1] + '/' + year_month_day[2] + '/' + year_month_day[0]
+								year_string = year_month_day[0] 								
+								date_time_digitized = GetMonthString(year_month_day[1]) + '\n' + year_month_day[2] + '\n' + year_string 
 						break
 		except:
 			print 'Exception did occur'
