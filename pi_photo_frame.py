@@ -239,7 +239,7 @@ def CreateWindow():
 	image_label = tk.Label(window, image = None, bg='black')
 	image_label.pack(side = "bottom", fill = "both", expand = "yes")
 
-	image_label_text = tk.Label(image_label, text='HELLO THERE', fg="red", bg="black")
+	image_label_text = tk.Label(image_label, text='HELLO THERE', fg="white", bg="black")
 	image_label_text.place(x=0, y=0)
 	labelfont = ('Arial',50)
 	image_label_text.config(font=labelfont, justify=tk.LEFT) 
@@ -322,7 +322,7 @@ def UpdateImageLabel(image_path):
 							year_month_day = split_data_time[0].split(':')
 							if len(year_month_day) == 3:
 								year_string = year_month_day[0] 								
-								date_time_digitized = GetMonthString(year_month_day[1]) + '\n' + year_month_day[2] + '\n' + year_string 
+								date_time_digitized = GetMonthString(year_month_day[1]) + '\n' + year_month_day[2] + ',\n' + year_string 
 						break
 		except:
 			print 'Exception did occur'
@@ -381,6 +381,7 @@ def UpdateImage(restart=True):
 				image_path = history_paths[history_index]
 		elif num_photos > 0:
 			index = random.randint(0, num_photos-1)
+			# print str(index) + ' of ' + str(len(photo_paths))
 			image_path = photo_paths[index]
 			if running:
 				del photo_paths[index]
