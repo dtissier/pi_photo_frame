@@ -274,27 +274,27 @@ def GetMonthString(month_str):
 	if month_str == '01':
 		return 'Jan'
 	if month_str == '02':
-		return 'Jan'
+		return 'Feb'
 	if month_str == '03':
-		return 'Jan'
+		return 'March'
 	if month_str == '04':
-		return 'Jan'
+		return 'April'
 	if month_str == '05':
-		return 'Jan'
+		return 'May'
 	if month_str == '06':
-		return 'Jan'
+		return 'June'
 	if month_str == '07':
-		return 'Jan'
+		return 'July'
 	if month_str == '08':
-		return 'Jan'
+		return 'Aug'
 	if month_str == '09':
-		return 'Jan'
+		return 'Sept'
 	if month_str == '10':
-		return 'Jan'
+		return 'Oct'
 	if month_str == '11':
-		return 'Jan'
+		return 'Nov'
 	if month_str == '12':
-		return 'Jan'
+		return 'Dec'
 	return month_str
 
 # **************************************************************
